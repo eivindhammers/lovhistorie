@@ -1,5 +1,34 @@
 # Done
 
+## 2026-11-06/07 — Friday segmentation (giants): +3 giants to 645 issues, 21 banked-partial for next week
+
+Resumed the Tier-2 **giant** burn (Henrik owns ranks 0-29; Eivind owns 30+). Folded 3 giants and
+banked a large partial tail before the weekly cap hit mid-burn.
+
+- **Corpus 642 -> 645 distinct issues.** Folded: `7530e26d` (437 markers, 47 chunks — a FREE fold:
+  every chunk was already banked on disk from the 10-30 burn, just un-folded; commit `492aef4`),
+  `efa991eb` (106 mk, 28 chunks, `e9f90d8`), `6c090474` (72 mk, 36 chunks, `db1b6ee`). All gate-clean
+  (classification_qa + segments_quality --diff), pure-addition. **Henrik's block now 9/30 giants done.**
+- **New driver `scratchpad/burn_shard.js`** (+ `burn_missing.js`): takes a COMPACT per-giant spec
+  `[{dir,iid,cidxs}]` and runs **only the listed (missing) cidx** — derives promptfile/outfile from the
+  fixed `seg_gN/` convention, so banked chunks are never re-paid (the stock `burn_workflow.js` re-expands
+  all cidx 0..n-1). This is the cheap-resume primitive the todo asked for.
+- **8 concurrent shard workflows** fired over all 21 remaining Henrik giants (824 missing chunks,
+  ~103/shard, balanced by chunk-count). **Hit the weekly usage cap mid-burn** — each shard landed
+  ~27-38 chunks before `monthly spend limit`/`429` errors. Durable-on-disk design meant zero lost work.
+- **Throughput finding:** 8-9 concurrent workflows (8 cores -> 6 subagents each) saturates the
+  **server-side** request limiter (`Server is temporarily limiting requests · not your usage limit`),
+  so wider fan-out just adds transient holes. ~128k tokens/chunk (dense OCR in, ~55-segment partition
+  out). The full 21-giant burn is ~105M tokens — more than one weekly window holds.
+- **Banked-partial on disk (resume next week, CHEAP — only missing cidx):** all 21 fresh Henrik giants
+  have partial `out/` chunks; **739 chunks still missing.** Densest-first: g1 `af1db44a` 21/35, g8
+  `17055e0a` 12/39, g7 `2b211353` 10/54, g2 `9f63b3ac` 8/47, g4 `365712be` 7/48, g9 `15ada757` 7/52,
+  ... (full table in todo.md). Resume: rebuild the compact spec from each `seg_gN/wf_units.json` minus
+  present `out/` files, re-fire `burn_shard.js`, fold each complete giant.
+- **git-LFS now imminent:** `segments.jsonl` is **60 MB** (over GitHub's 50 MB soft warn). Folding the
+  21 banked partials next week will cross the **100 MB hard limit** — migrate to git-LFS (or external)
+  before/as they fold. Flagged to Henrik; held off the history-rewrite pending his go-ahead.
+
 ## 2026-10-24 — Friday segmentation (cont.): parallel-burn to 636 issues (+122 past the 7-batch run)
 
 Extended the 2026-10-23 run into the weekly-limit reset window. Finished the Tier-1 skal_lyde 5-6
